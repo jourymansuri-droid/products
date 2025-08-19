@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:products/providers/theme_notifier.dart';
+import 'package:products/screens/login_screen.dart';
 import 'package:products/services/auth_services.dart';
 import 'package:products/services/storage_services.dart';
 
@@ -89,10 +90,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     divisions: 13,
                     label: _expiringDays.round().toString(),
                     onChanged: (value) => setState(() => _expiringDays = value),
-                    onChangeEnd:
-                        (value) => widget.onSettingsChanged({
-                          'expiringSoonDays': value.toInt(),
-                        }),
+                    onChangeEnd: (value) => widget.onSettingsChanged({
+                      'expiringSoonDays': value.toInt(),
+                    }),
                   ),
                 ],
               ),
@@ -100,10 +100,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           Card(
-            color:
-                Theme.of(context).brightness == Brightness.light
-                    ? Colors.red.shade50
-                    : Colors.red.shade900.withOpacity(0.4),
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.red.shade50
+                : Colors.red.shade900.withOpacity(0.4),
             child: ListTile(
               leading: Icon(
                 Icons.warning_amber_rounded,
@@ -112,49 +111,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text(
                 "Clear All Data",
                 style: TextStyle(
-                  color:
-                      Theme.of(context).brightness == Brightness.light
-                          ? Colors.red.shade900
-                          : Colors.red.shade200,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.red.shade900
+                      : Colors.red.shade200,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               subtitle: Text(
                 "This will delete all your products.",
                 style: TextStyle(
-                  color:
-                      Theme.of(context).brightness == Brightness.light
-                          ? Colors.red.shade800
-                          : Colors.red.shade300,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.red.shade800
+                      : Colors.red.shade300,
                 ),
               ),
-              onTap:
-                  () => showDialog(
-                    context: context,
-                    builder:
-                        (ctx) => AlertDialog(
-                          title: const Text("Are you sure?"),
-                          content: const Text(
-                            "This action cannot be undone. All your products and categories will be permanently deleted for this account.",
-                          ),
-                          actions: [
-                            TextButton(
-                              child: const Text("Cancel"),
-                              onPressed: () => Navigator.of(ctx).pop(),
-                            ),
-                            FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              child: const Text("Delete Everything"),
-                              onPressed: () {
-                                widget.onResetApp();
-                                Navigator.of(ctx).pop();
-                              },
-                            ),
-                          ],
-                        ),
+              onTap: () => showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("Are you sure?"),
+                  content: const Text(
+                    "This action cannot be undone. All your products and categories will be permanently deleted for this account.",
                   ),
+                  actions: [
+                    TextButton(
+                      child: const Text("Cancel"),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text("Delete Everything"),
+                      onPressed: () {
+                        widget.onResetApp();
+                        Navigator.of(ctx).pop();
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -167,6 +162,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text("Sign Out"),
               onTap: () async {
                 await AuthService().signOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginScreen(themeNotifier: widget.themeNotifier,),
+                  ),
+                );
               },
             ),
           ),

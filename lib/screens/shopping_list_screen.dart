@@ -1,4 +1,4 @@
-// lib/screens/shopping_list_screen.dart
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:products/models/models.dart';
 import 'package:products/services/storage_services.dart';
@@ -13,19 +13,34 @@ class ShoppingListScreen extends StatefulWidget {
 class _ShoppingListScreenState extends State<ShoppingListScreen> {
   List<ShoppingListItem> _items = [];
   final _textController = TextEditingController();
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    _loadItems();
+    _getCurrentUserId();
+  }
+
+  Future<void> _getCurrentUserId() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
+      });
+      _loadItems();
+    }
   }
 
   Future<void> _loadItems() async {
-    _items = await widget.storageService.loadShoppingList();
+    if (_userId == null) return;
+    _items = await widget.storageService.loadShoppingList(_userId!);
     setState(() {});
   }
 
-  Future<void> _saveItems() => widget.storageService.saveShoppingList(_items);
+  Future<void> _saveItems() async {
+    if (_userId == null) return;
+    await widget.storageService.saveShoppingList(_items, _userId!);
+  }
 
   void _addItem() {
     if (_textController.text.isNotEmpty) {

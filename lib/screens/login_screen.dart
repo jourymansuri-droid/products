@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:products/providers/theme_notifier.dart';
+import 'package:products/screens/home_screen.dart';
 import 'package:products/screens/register_screen.dart';
 import 'package:products/services/auth_services.dart';
 
@@ -30,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(themeNotifier: widget.themeNotifier),));
     } on FirebaseAuthException catch (e) {
       final snackBar = SnackBar(
         content: Text(e.message ?? "An error occurred."),

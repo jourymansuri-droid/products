@@ -1,4 +1,4 @@
-// lib/screens/home_page.dart
+import 'package:firebase_auth/firebase_auth.dart'; // <-- ADD THIS IMPORT
 import 'package:flutter/material.dart';
 import 'package:products/models/models.dart';
 import 'package:products/providers/theme_notifier.dart';
@@ -50,9 +50,22 @@ class _HomePageState extends State<HomePage> {
     _loadAllData();
   }
 
+  // --- MODIFIED FUNCTION ---
   Future<void> _resetApp() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // Clear Firestore products (as before)
     await _firebaseService.clearAllProducts();
-    await _storageService.clearSharedPrefs();
+    
+    // Clear user's shopping list from Firebase Realtime Database
+    if (user != null) {
+      await _storageService.clearUserShoppingList(user.uid);
+    }
+
+    // Clear local device settings (renamed from clearSharedPrefs)
+    await _storageService.clearLocalSettings();
+
+    // Reload UI
     _loadAllData();
   }
 
