@@ -21,12 +21,14 @@ class SettingsScreen extends StatefulWidget {
     required this.themeNotifier,
     required this.storageService,
   });
+
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late double _expiringDays;
+
   @override
   void initState() {
     super.initState();
@@ -36,25 +38,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final userEmail = FirebaseAuth.instance.currentUser?.email ?? "No user";
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Logged-in info
           Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: const Text("Logged in as"),
-                subtitle: Text(
-                  userEmail,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text("Logged in as"),
+              subtitle: Text(userEmail, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 16),
+
+          // Dark Mode toggle
           Card(
             child: SwitchListTile(
               title: const Text("Dark Mode"),
@@ -68,21 +68,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // Expiring Soon slider
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Expiring Soon Threshold",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text("Expiring Soon Threshold", style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 8),
-                  Text(
-                    "Notify about items expiring in the next ${_expiringDays.toInt()} days.",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  Text("Notify about items expiring in the next ${_expiringDays.toInt()} days."),
                   Slider(
                     value: _expiringDays,
                     min: 1,
@@ -99,48 +95,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
+
+          // Clear All Data
           Card(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Colors.red.shade50
-                : Colors.red.shade900.withOpacity(0.4),
+            color: Colors.red.shade50,
             child: ListTile(
-              leading: Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.red.shade700,
-              ),
-              title: Text(
-                "Clear All Data",
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? Colors.red.shade900
-                      : Colors.red.shade200,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              subtitle: Text(
-                "This will delete all your products.",
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? Colors.red.shade800
-                      : Colors.red.shade300,
-                ),
-              ),
+              leading: Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
+              title: Text("Clear All Data", style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold)),
+              subtitle: Text("This will delete all your products.", style: TextStyle(color: Colors.red.shade800)),
               onTap: () => showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text("Are you sure?"),
-                  content: const Text(
-                    "This action cannot be undone. All your products and categories will be permanently deleted for this account.",
-                  ),
+                  content: const Text("This action cannot be undone. All your products and categories will be deleted."),
                   actions: [
-                    TextButton(
-                      child: const Text("Cancel"),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
+                    TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text("Cancel")),
                     FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
+                      style: FilledButton.styleFrom(backgroundColor: Colors.red),
                       child: const Text("Delete Everything"),
                       onPressed: () {
                         widget.onResetApp();
@@ -153,20 +124,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // Sign Out
           Card(
             child: ListTile(
-              leading: Icon(
-                Icons.logout,
-                color: Theme.of(context).colorScheme.error,
-              ),
+              leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
               title: const Text("Sign Out"),
               onTap: () async {
                 await AuthService().signOut();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginScreen(themeNotifier: widget.themeNotifier,),
-                  ),
+                  MaterialPageRoute(builder: (context) => LoginScreen(themeNotifier: widget.themeNotifier)),
                 );
               },
             ),

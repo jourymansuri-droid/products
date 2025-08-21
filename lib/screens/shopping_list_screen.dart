@@ -6,6 +6,7 @@ import 'package:products/services/storage_services.dart';
 class ShoppingListScreen extends StatefulWidget {
   final StorageService storageService;
   const ShoppingListScreen({super.key, required this.storageService});
+
   @override
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
 }
@@ -18,54 +19,40 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   @override
   void initState() {
     super.initState();
-    _getCurrentUserId();
+    _initUser();
   }
 
-  Future<void> _getCurrentUserId() async {
+  Future<void> _initUser() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      setState(() {
-        _userId = user.uid;
-      });
-      _loadItems();
+      _userId = user.uid;
+      _items = await widget.storageService.loadShoppingList(_userId!);
+      setState(() {});
     }
   }
 
-  Future<void> _loadItems() async {
-    if (_userId == null) return;
-    _items = await widget.storageService.loadShoppingList(_userId!);
-    setState(() {});
-  }
-
-  Future<void> _saveItems() async {
-    if (_userId == null) return;
-    await widget.storageService.saveShoppingList(_items, _userId!);
+  Future<void> _save() async {
+    if (_userId != null) await widget.storageService.saveShoppingList(_items, _userId!);
   }
 
   void _addItem() {
-    if (_textController.text.isNotEmpty) {
-      setState(
-        () => _items.insert(
-          0,
-          ShoppingListItem(
-            id: DateTime.now().toIso8601String(),
-            name: _textController.text,
-          ),
-        ),
-      );
-      _textController.clear();
-      _saveItems();
-    }
+    if (_textController.text.isEmpty) return;
+    _items.insert(0, ShoppingListItem(id: DateTime.now().toIso8601String(), name: _textController.text));
+    _textController.clear();
+    _save();
+    setState(() {});
   }
 
   void _toggleItem(int index) {
-    setState(() => _items[index].isChecked = !_items[index].isChecked);
-    _saveItems();
+    _items[index].isChecked = !_items[index].isChecked;
+    _save();
+    setState(() {});
   }
 
   void _removeItem(int index) {
-    setState(() => _items.removeAt(index));
-    _saveItems();
+    _items.removeAt(index);
+    _save();
+    setState(() {});
   }
 
   @override
@@ -75,7 +62,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Expanded(
@@ -83,62 +70,48 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                     controller: _textController,
                     decoration: InputDecoration(
                       hintText: 'Add an item...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      fillColor: Theme.of(context).colorScheme.surface,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onSubmitted: (_) => _addItem(),
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton.filled(
+                IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: _addItem,
-                  style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child:
-                _items.isEmpty
-                    ? const Center(child: Text("Your shopping list is empty."))
-                    : ListView.builder(
-                      itemCount: _items.length,
-                      itemBuilder: (context, index) {
-                        final item = _items[index];
-                        return Dismissible(
-                          key: Key(item.id),
-                          onDismissed: (_) => _removeItem(index),
-                          background: Container(
-                            color: Colors.red.shade300,
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
+            child: _items.isEmpty
+                ? const Center(child: Text("Your shopping list is empty."))
+                : ListView.builder(
+                    itemCount: _items.length,
+                    itemBuilder: (context, index) {
+                      final item = _items[index];
+                      return Dismissible(
+                        key: Key(item.id),
+                        onDismissed: (_) => _removeItem(index),
+                        background: Container(
+                          color: Colors.red.shade300,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        child: CheckboxListTile(
+                          title: Text(
+                            item.name,
+                            style: TextStyle(
+                                decoration: item.isChecked ? TextDecoration.lineThrough : null),
                           ),
-                          child: CheckboxListTile(
-                            title: Text(
-                              item.name,
-                              style: TextStyle(
-                                decoration:
-                                    item.isChecked
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
-                              ),
-                            ),
-                            value: item.isChecked,
-                            onChanged: (_) => _toggleItem(index),
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                        );
-                      },
-                    ),
+                          value: item.isChecked,
+                          onChanged: (_) => _toggleItem(index),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

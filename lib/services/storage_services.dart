@@ -11,8 +11,6 @@ class StorageService {
   static const _settingsKey = 'app_settings';
   static const _themeKey = 'app_theme';
 
-  // --- Firebase Realtime Database Integration ---
-  // Create an instance of FirebaseDatabase
   final FirebaseDatabase _database = FirebaseDatabase.instance;
 
   // MODIFIED: Saves the shopping list to Firebase under the user's unique ID.

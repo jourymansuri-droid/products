@@ -10,7 +10,7 @@ import 'firebase_options.dart'; // Import the generated Firebase options
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Update this line to include the options argument
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
